@@ -7,8 +7,12 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Patrick on 4/11/2015
@@ -16,7 +20,7 @@ import java.util.List;
 public class XmlParser {
     private static final String ns = null;
 
-    public List<Entry> parse(InputStream in) throws XmlPullParserException, IOException {
+    public List<Entry> parse(InputStream in) throws XmlPullParserException, IOException, ParseException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -28,7 +32,7 @@ public class XmlParser {
         }
     }
 
-    private List<Entry> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private List<Entry> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         List<Entry> entries = new ArrayList<>();
 
         parser.require(XmlPullParser.START_TAG, ns, "feed");
@@ -57,7 +61,7 @@ public class XmlParser {
     }
 
     public static class Content {
-        public String reportdatetime;
+        public Date reportdatetime;
         public String offense;
         public String blocksiteaddress;
         public double blockxcoord;
@@ -76,7 +80,7 @@ public class XmlParser {
         }
     }
 
-    private Entry readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private Entry readEntry(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         Entry output = new Entry();
 
         parser.require(XmlPullParser.START_TAG, ns, "entry");
@@ -95,7 +99,7 @@ public class XmlParser {
         return output;
     }
 
-    private Content readContent(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private Content readContent(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         Content output = null;
 
         parser.require(XmlPullParser.START_TAG, ns, "content");
@@ -115,7 +119,7 @@ public class XmlParser {
         return output;
     }
 
-    private Content readDcst(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private Content readDcst(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         Content output = new Content();
 
         parser.require(XmlPullParser.START_TAG, ns, "dcst:ReportedCrime");
@@ -143,12 +147,14 @@ public class XmlParser {
         return output;
     }
 
-    private String readDateTime(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private Date readDateTime(XmlPullParser parser) throws XmlPullParserException, IOException, ParseException {
         parser.require(XmlPullParser.START_TAG, ns, "dcst:reportdatetime");
         String str = removeCData(readText(parser));
-        //TODO regexp
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.US);
+        System.out.println(format.format(new Date()));
+        Date date = format.parse(str);
         parser.require(XmlPullParser.END_TAG, ns, "dcst:reportdatetime");
-        return str;
+        return date;
     }
 
     private String readOffense(XmlPullParser parser) throws XmlPullParserException, IOException {

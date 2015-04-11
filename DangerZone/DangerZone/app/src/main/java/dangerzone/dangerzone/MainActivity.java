@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -113,7 +114,7 @@ public class MainActivity extends ActionBarActivity {
         XmlParser parser = new XmlParser();
         try {
             return parser.parse(stream).toString();
-        } catch (XmlPullParserException e) {
+        } catch (XmlPullParserException | ParseException | NumberFormatException e) {
             return "Oh no! We are doomed!";
         }
     }

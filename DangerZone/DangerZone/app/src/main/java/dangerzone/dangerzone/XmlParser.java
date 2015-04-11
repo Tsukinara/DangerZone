@@ -63,6 +63,7 @@ public class XmlParser {
     public static class Content {
         public Date reportdatetime;
         public String offense;
+        public String method;
         public String blocksiteaddress;
         public double blockxcoord;
         public double blockycoord;
@@ -73,6 +74,8 @@ public class XmlParser {
             blockxcoord = 350000; blockycoord=160000;
             convertCoordinates();
         }
+
+        //Affine transformation for approximation
 
         //387000,125000 -> 38.792656145954,-77.1496413967816
         //405000,125000 -> 38.7927379317937,-76.9424455726982
@@ -99,6 +102,7 @@ public class XmlParser {
             builder.append("{");
             builder.append(reportdatetime + ", ");
             builder.append(offense + ", ");
+            builder.append(method + ", ");
             builder.append(blocksiteaddress + ", ");
             builder.append(latitude + ", ");
             builder.append(longitude + "}");
@@ -160,7 +164,9 @@ public class XmlParser {
                 output.reportdatetime = readDateTime(parser);
             } else if (name.equals("dcst:offense")) {
                 output.offense = readOffense(parser);
-            } else if (name.equals("dcst:blocksiteaddress")) {
+            } else if (name.equals("dcst:method")) {
+                output.method = readMethod(parser);
+            }else if (name.equals("dcst:blocksiteaddress")) {
                 output.blocksiteaddress = readSiteAddress(parser);
             } else if (name.equals("dcst:blockxcoord")) {
                 output.blockxcoord = readXCoord(parser);
@@ -188,6 +194,13 @@ public class XmlParser {
         parser.require(XmlPullParser.START_TAG, ns, "dcst:offense");
         String str = removeCData(readText(parser));
         parser.require(XmlPullParser.END_TAG, ns, "dcst:offense");
+        return str;
+    }
+
+    private String readMethod(XmlPullParser parser) throws XmlPullParserException, IOException {
+        parser.require(XmlPullParser.START_TAG, ns, "dcst:method");
+        String str = removeCData(readText(parser));
+        parser.require(XmlPullParser.END_TAG, ns, "dcst:method");
         return str;
     }
 

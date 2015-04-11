@@ -1,6 +1,7 @@
 package dangerzone.dangerzone;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -36,6 +37,9 @@ public class MainActivity extends ActionBarActivity {
         } else {
             textView.setText("Error");
         }
+
+        Intent intent = new Intent(this, DaengerDaemon.class);
+        startService(intent);
     }
 
 

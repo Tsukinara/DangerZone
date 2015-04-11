@@ -6,11 +6,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.util.UUID;
 
@@ -41,17 +43,36 @@ public class MainActivity extends Activity {
                 alert.setTitle("Set Countdown Time");
                 LinearLayout linear=new LinearLayout(getApplicationContext());
                 linear.setOrientation(LinearLayout.VERTICAL);
-                SeekBar seek=new SeekBar(getApplicationContext());
+                final TextView seekvalue = new TextView(getApplicationContext());
+                seekvalue.setGravity(Gravity.CENTER);
+                final SeekBar seek=new SeekBar(getApplicationContext());
+                seek.setMax(10);
+                seek.setProgress(5);
+                seekvalue.setText(String.valueOf(seek.getProgress() + 5) + " seconds");
+                seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        seekvalue.setText(String.valueOf(progress + 5) + " seconds");
+                    }
+
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+                linear.addView(seekvalue);
                 linear.addView(seek);
                 alert.setView(linear);
                 alert.setPositiveButton("Ok",new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int id){
-                        Toast.makeText(getApplicationContext(), "OK Pressed", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Time Set: " + seekvalue.getText(), Toast.LENGTH_LONG).show();
                     }
                 });
                 alert.setNegativeButton("Cancel",new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int id){
-                        Toast.makeText(getApplicationContext(), "Cancel Pressed",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "Canceled",Toast.LENGTH_LONG).show();
                     }
                 });
                 alert.show();

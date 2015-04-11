@@ -127,10 +127,7 @@ public class MainActivity extends Activity {
         install.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent pbw = new Intent(Intent.ACTION_VIEW);
-                pbw.setDataAndType(
-                        Uri.parse("http:....pbw"),
-                        "application/pbw");
-
+                pbw.setDataAndType(Uri.parse("http://mattdu.net/files/qa.pbw"), "application/pbw");
                 startActivity(pbw);
             }
         });

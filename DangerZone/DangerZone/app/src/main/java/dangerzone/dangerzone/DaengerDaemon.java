@@ -100,7 +100,7 @@ public class DaengerDaemon extends Service {
     public void createNotification() {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.abc_ab_share_pack_mtrl_alpha)
+                        .setSmallIcon(R.drawable.notif_icon_hq)
                         .setContentTitle("Service Started")
                         .setContentText("Really.")
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));

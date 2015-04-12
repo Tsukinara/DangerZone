@@ -57,7 +57,7 @@ public class MainActivity extends Activity {
 
     public void onRadiusClicked(View view) {
         Intent intent = new Intent("service_settings");
-        intent.putExtra("radius", 500);
+        intent.putExtra("radius", 500.0);
 
         LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         bm.sendBroadcast(intent);

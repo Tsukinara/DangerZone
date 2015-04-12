@@ -4,59 +4,143 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" tools:context=".MainActivity">
 
-    <Button
+    <ImageView
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/title_image"
+        android:contentDescription="Title image"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"
+        android:scaleType="fitEnd"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
+        android:id="@+id/imageView" />
+
+    <ImageButton
         android:onClick="onRadiusClicked"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change notification radius"
+        android:src="@drawable/radius_button"
+        android:contentDescription="Change notification radius"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="4dp"
+        android:scaleType="fitEnd"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
         android:id="@+id/radius" />
 
-    <Button
+    <ImageButton
         android:onClick="onRecencyClicked"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Recency preferences"
+        android:src="@drawable/recency_button"
+        android:contentDescription="Recency preferences"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:scaleType="fitEnd"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
         android:id="@+id/recency" />
 
-    <Button
+    <ImageButton
         android:onClick="onRateClicked"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Adjust query rate"
+        android:src="@drawable/query_rate_button"
+        android:contentDescription="Adjust query rate"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:scaleType="fitEnd"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
         android:id="@+id/rate" />
 
-    <Button
+    <ImageButton
         android:onClick="onForceClicked"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Force query now"
+        android:src="@drawable/force_query_button"
+        android:contentDescription="Force query now"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:scaleType="fitEnd"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
         android:id="@+id/force" />
 
-    <Button
+    <ImageButton
         android:onClick="onStopClicked"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Stop service"
+        android:src="@drawable/service_stop_button"
+        android:contentDescription="Stop service"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:scaleType="fitEnd"
+        android:adjustViewBounds="true"
+        android:background="@android:color/transparent"
         android:id="@+id/stop" />
 
-    <Button
-        android:onClick="onListClicked"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="View full list"
-        android:id="@+id/list" />
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
 
-    <Button
-        android:onClick="onAboutClicked"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="About"
-        android:id="@+id/about" />
+        <ImageButton
+            android:onClick="onListClicked"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/full_list_button"
+            android:contentDescription="View full list"
+            android:paddingLeft="0dp"
+            android:paddingRight="4dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="4dp"
+            android:scaleType="fitEnd"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:id="@+id/list" />
+
+        <ImageButton
+            android:onClick="onAboutClicked"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/about_button"
+            android:contentDescription="About"
+            android:paddingLeft="4dp"
+            android:paddingRight="0dp"
+            android:paddingTop="0dp"
+            android:paddingBottom="4dp"
+            android:scaleType="fitEnd"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:id="@+id/about" />
+    </LinearLayout>
 </LinearLayout>

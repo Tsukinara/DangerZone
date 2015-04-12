@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +21,7 @@ public class PasscodeActivity extends ActionBarActivity {
     final String DOWN_CHAR = "\u25BC";
     final int PASSCODE_LEN = 5;
     final int grey = Color.rgb(238,238,238);
-    final int yellow = Color.parseColor("yellow");
+    final int yellow = Color.rgb(139,170,200);
     String new_string = "";
     String confirm_string = "";
 
@@ -52,11 +53,11 @@ public class PasscodeActivity extends ActionBarActivity {
                 }
         }
         new_passcode.setBackgroundColor(yellow);
-        Button up_button = (Button) findViewById(R.id.up_button);
-        Button mid_button = (Button) findViewById(R.id.mid_button);
-        Button down_button = (Button) findViewById(R.id.down_button);
-        Button reset_button = (Button) findViewById(R.id.reset_button);
-        Button clear_button = (Button) findViewById(R.id.clear_button);
+        ImageButton up_button = (ImageButton) findViewById(R.id.up_button);
+        ImageButton mid_button = (ImageButton) findViewById(R.id.mid_button);
+        ImageButton down_button = (ImageButton) findViewById(R.id.down_button);
+        ImageButton reset_button = (ImageButton) findViewById(R.id.reset_button);
+        ImageButton clear_button = (ImageButton) findViewById(R.id.clear_button);
 
         up_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

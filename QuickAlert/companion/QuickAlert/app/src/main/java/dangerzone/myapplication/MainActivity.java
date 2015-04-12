@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -27,12 +28,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button passcode = (Button) findViewById(R.id.passcode);
-        Button countdown = (Button) findViewById(R.id.countdown);
-        Button emergency = (Button) findViewById(R.id.emergency);
-        Button define = (Button) findViewById(R.id.define);
-        Button install = (Button) findViewById(R.id.install);
-        Button about = (Button) findViewById(R.id.about);
+        ImageButton passcode = (ImageButton) findViewById(R.id.passcode);
+        ImageButton countdown = (ImageButton) findViewById(R.id.countdown);
+        ImageButton emergency = (ImageButton) findViewById(R.id.emergency);
+        ImageButton define = (ImageButton) findViewById(R.id.define);
+        ImageButton install = (ImageButton) findViewById(R.id.install);
+        ImageButton about = (ImageButton) findViewById(R.id.about);
 
         passcode.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

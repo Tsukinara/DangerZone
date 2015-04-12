@@ -30,8 +30,9 @@ public class EntryAdapter extends ArrayAdapter {
     @Override public View getView(int position, View convertView, ViewGroup parent) {
         final ViewHolder vh;
         if (convertView == null) {
-            convertView = mInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            convertView = mInflater.inflate(R.layout.list_element, parent, false);
             vh = new ViewHolder(convertView);
+            vh.textView = (TextView) convertView.findViewById(R.id.textView);
             convertView.setTag(vh);
         } else {
             vh = (ViewHolder) convertView.getTag();

@@ -8,14 +8,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends ActionBarActivity {
 
     private EntryAdapter adapter;
     private DataUpdateReceiver dataUpdateReceiver;
@@ -37,7 +39,7 @@ public class MainActivity extends ListActivity {
     private void updateList() {
         adapter.clear();
         for (Entry e : entries.getValues()) {
-            adapter.add(new EntryWrapper(e, loc, loc.getProvider().equals("poi")));
+            adapter.add(new EntryWrapper(e, loc, !loc.getProvider().equals("poi")));
         }
         adapter.sort(new Comparator<EntryWrapper>(){
             @Override
@@ -57,20 +59,26 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         entries = new EntryList();
 
         adapter = new EntryAdapter(this.getApplicationContext(), new ArrayList<EntryWrapper>());
 
-        setListAdapter(adapter);
+        ListView listView = (ListView) findViewById(R.id.list);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, EntryActivity.class);
+                EntryWrapper w = (EntryWrapper)(parent.getAdapter().getItem(position));
+                intent.putExtra("wrapper", w);
+                startActivity(intent);
+            }
+        });
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);
-    }
-
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        Intent intent = new Intent(this, EntryActivity.class);
     }
 
     @Override
@@ -91,7 +99,7 @@ public class MainActivity extends ListActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

@@ -83,7 +83,6 @@ public class DaengerDaemon extends Service {
     }
 
     public void sendDataToMain() {
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent("refresh");
 
         Bundle bundle = new Bundle();

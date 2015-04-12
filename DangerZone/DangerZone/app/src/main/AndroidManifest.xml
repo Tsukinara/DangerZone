@@ -26,6 +26,15 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+
+        <activity
+            android:name=".EntryActivity"
+            android:label="@string/title_activity_entry"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="dangerzone.dangerzone.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

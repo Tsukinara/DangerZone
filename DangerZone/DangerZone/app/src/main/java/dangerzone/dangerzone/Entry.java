@@ -1,5 +1,6 @@
 package dangerzone.dangerzone;
 
+import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -21,6 +22,12 @@ public class Entry implements Parcelable {
 
     public Entry() {
 
+    }
+
+    public float distTo(Location lop) {
+        float dist[] = new float[1];
+        Location.distanceBetween(latitude, longitude, lop.getLatitude(), lop.getLongitude(), dist);
+        return dist[0];
     }
 
     //Parcels
@@ -96,3 +103,4 @@ public class Entry implements Parcelable {
                 longitude + "}";
     }
 }
+

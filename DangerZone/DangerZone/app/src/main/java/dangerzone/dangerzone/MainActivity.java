@@ -14,9 +14,12 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+
 public class MainActivity extends ListActivity {
 
-    private ArrayAdapter<String> adapter;
+    private EntryAdapter adapter;
     private DataUpdateReceiver dataUpdateReceiver;
     private EntryList entries;
     private Location loc;
@@ -36,18 +39,21 @@ public class MainActivity extends ListActivity {
     private void updateList() {
         adapter.clear();
         for (Entry e : entries.getValues()) {
-            String str;
-            if (loc.getProvider().equals("poi")) {
-                str = e.offense;
-            } else {
-                float[] distance = new float[1];
-                Location.distanceBetween(e.latitude, e.longitude, loc.getLatitude(), loc.getLongitude(), distance);
-                str = e.offense + "\n" +
-                        Math.floor(distance[0]) +
-                        "m";
-            }
-            adapter.add(str);
+            adapter.add(new EntryWrapper(e, loc, loc.getProvider().equals("poi")));
         }
+        adapter.sort(new Comparator<EntryWrapper>(){
+            @Override
+            public int compare(EntryWrapper lhs, EntryWrapper rhs) {
+                int out = 0;
+                if (lhs.valid && rhs.valid){
+                    out = (new Double(lhs.dist)).compareTo(new Double(rhs.dist));
+                }
+                if (out == 0){
+                    out = -lhs.entry.reportdatetime.compareTo(rhs.entry.reportdatetime);
+                }
+                return out;
+            }
+        });
     }
 
     @Override
@@ -55,9 +61,7 @@ public class MainActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         entries = new EntryList();
 
-        adapter = new ArrayAdapter<>(this, R.layout.list_element);
-        adapter.add("Hello\nElevator");
-        adapter.add("World");
+        adapter = new EntryAdapter(this.getApplicationContext(), new ArrayList<EntryWrapper>());
 
         setListAdapter(adapter);
 
@@ -67,6 +71,7 @@ public class MainActivity extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
+
     }
 
     @Override

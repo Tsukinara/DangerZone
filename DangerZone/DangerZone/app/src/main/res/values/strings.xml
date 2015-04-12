@@ -3,6 +3,9 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="radius_settings">Radius</string>
+    <string name="recency_settings">Recency</string>
+    <string name="rate_settings">Update Rate</string>
     <string name="title_activity_entry">EntryActivity</string>
     <string name="title_activity_list">ListActivity</string>
 </resources>

@@ -1,14 +1,21 @@
 package dangerzone.dangerzone;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -16,6 +23,7 @@ public class MainActivity extends Activity {
     private DataUpdateReceiver dataUpdateReceiver;
     private EntryList entries;
     private Location loc;
+    private int radius = 100000, recency = 3, rate = 5;
 
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
@@ -34,6 +42,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         entries = new EntryList();
+
+        Button rady = (Button) findViewById(R.id.radius);
+        Button recency = (Button) findViewById(R.id.recency);
+        Button rate = (Button) findViewById(R.id.rate);
+
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);
@@ -56,11 +69,52 @@ public class MainActivity extends Activity {
     }
 
     public void onRadiusClicked(View view) {
-        Intent intent = new Intent("service_settings");
-        intent.putExtra("radius", 500);
+        final int tmp_rady[] = {radius};
+        final Context context = this;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.radius_settings);
+        TextView text = new TextView(this);
+        text.setText("How cautious are you feeling?");
+        LinearLayout linlay = new LinearLayout(this);
+        linlay.setOrientation(LinearLayout.VERTICAL);
+        SeekBar radseek = new SeekBar(this);
+        radseek.setMax(500000);
+        radseek.setProgress(tmp_rady[0]);
+        radseek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                tmp_rady[0] = progress;
+            }
 
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
-        bm.sendBroadcast(intent);
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+        linlay.addView(text);
+        linlay.addView(radseek);
+        builder.setView(linlay);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                radius = tmp_rady[0];
+                Intent intent = new Intent("service_settings");
+                intent.putExtra("radius", radius);
+                LocalBroadcastManager bm = LocalBroadcastManager.getInstance(context);
+                bm.sendBroadcast(intent);
+                Toast.makeText(getApplicationContext(), "Radius Set", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
     }
 
     public void onRecencyClicked(View view) {

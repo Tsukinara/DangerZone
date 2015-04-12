@@ -3,4 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/radius_settings" android:title="@string/radius_settings" />
+    <item android:id="@+id/recency_settings" android:title="@string/recency_settings" />
+    <item android:id="@+id/rate_settings" android:title="@string/rate_settings" />
 </menu>

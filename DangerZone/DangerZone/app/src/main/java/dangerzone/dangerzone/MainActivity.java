@@ -116,15 +116,16 @@ public class MainActivity extends Activity {
                 LocalBroadcastManager bm = LocalBroadcastManager.getInstance(context);
                 bm.sendBroadcast(intent);
                 Toast.makeText(getApplicationContext(), "Radius Set", Toast.LENGTH_LONG).show();
-                finish();
+                dialog.dismiss();
             }
         });
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                finish();
+                dialog.cancel();
             }
         });
+        builder.show();
     }
 
     public void onRecencyClicked(View view) {

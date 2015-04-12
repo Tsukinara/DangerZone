@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
@@ -16,14 +17,17 @@ import android.widget.ListView;
 public class MainActivity extends ListActivity {
 
     private ArrayAdapter<String> adapter;
-    private EntryList entries;
     private DataUpdateReceiver dataUpdateReceiver;
+    private EntryList entries;
+    private Location loc;
 
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("refresh")) {
-                entries = intent.getBundleExtra("data").getParcelable("data");
+                Bundle data = intent.getBundleExtra("data");
+                entries = data.getParcelable("data");
+                loc = data.getParcelable("location");
                 updateList();
             }
         }
@@ -32,7 +36,16 @@ public class MainActivity extends ListActivity {
     private void updateList() {
         adapter.clear();
         for (Entry e : entries.getValues()) {
-            String str = e.offense + "\n" + e.latitude;
+            String str;
+            if (loc.getProvider().equals("poi")) {
+                str = e.offense;
+            } else {
+                float[] distance = new float[1];
+                Location.distanceBetween(e.latitude, e.longitude, loc.getLatitude(), loc.getLongitude(), distance);
+                str = e.offense + "\n" +
+                        Math.floor(distance[0]) +
+                        "m";
+            }
             adapter.add(str);
         }
     }

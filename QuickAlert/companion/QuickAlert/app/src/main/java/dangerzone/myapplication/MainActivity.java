@@ -2,7 +2,6 @@ package dangerzone.myapplication;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,9 +20,9 @@ import android.widget.Toast;
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
-public class MainActivity extends Activity {
+import java.util.UUID;
 
-    private BroadcastReceiver pdr;
+public class MainActivity extends Activity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,29 +149,12 @@ public class MainActivity extends Activity {
         });
         about.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                PebbleKit.startAppOnPebble(getApplicationContext(), UUID.fromString("2edff9df-4d60-47db-9962-437d40c5f1e2"));
                 Intent about_intent = new Intent(getApplicationContext(), AboutActivity.class);
                 startActivity(about_intent);
             }
         });
-        pdr = PebbleKit.registerReceivedDataHandler(this, new PebbleKit.PebbleDataReceiver(Constants.PEBBLE_APP_UUID) {
-            public void receiveData(final Context context, final int transactionId, final PebbleDictionary data) {
-                System.out.println("Hello!");
-                PebbleKit.sendAckToPebble(getApplicationContext(), transactionId);
-                final SharedPreferences pref = getSharedPreferences("dangerzone", Context.MODE_PRIVATE);
-                String number;
-                if(pref.contains("thechosenphone"))
-                    number = pref.getString("thechosenphone", "");
-                else
-                    number = "tel:3012817202";
-                Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse(number));
-                startActivity(callIntent);
-            }
-        });
-    }
-
-    protected void onDestroy(){
-        if(pdr!=null)
-            unregisterReceiver(pdr);
-        super.onDestroy();
+        Intent intent = new Intent(this, PebbleService.class);
+        startService(intent);
     }
 }

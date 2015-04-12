@@ -40,7 +40,6 @@ public class EntryList implements Parcelable{
         int size = in.readInt();
         for (int i=0; i<size; i++) {
             Entry e = in.readParcelable(Entry.class.getClassLoader());
-            System.out.println("parcel:" + e);
             entries.put(e.ccn, e);
         }
     }
@@ -90,7 +89,6 @@ public class EntryList implements Parcelable{
             float[] distance = new float[1];
             Location.distanceBetween(e.latitude, e.longitude, location.getLatitude(), location.getLongitude(), distance);
             if (distance[0] < threshold) {
-                System.out.println(distance[0]);
                 output.add(e);
             }
         }

@@ -5,8 +5,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.ContactsContract;
+import android.telephony.SmsManager;
 
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
@@ -14,6 +21,9 @@ import com.getpebble.android.kit.util.PebbleDictionary;
 public class PebbleService extends Service {
 
     private SharedPreferences sp;
+    private LocationManager locManager;
+    private LocationListener locListener;
+    private Location loc;
     private BroadcastReceiver pdr;
 
     public PebbleService() {
@@ -23,6 +33,7 @@ public class PebbleService extends Service {
     public void onCreate() {
         super.onCreate();
         sp = getSharedPreferences("dangerzone", Context.MODE_PRIVATE);
+        locManager = (LocationManager) this.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         pdr = PebbleKit.registerReceivedDataHandler(getApplicationContext(), new PebbleKit.PebbleDataReceiver(Constants.PEBBLE_APP_UUID) {
             public void receiveData(final Context context, final int transactionId, final PebbleDictionary data) {
                 PebbleKit.sendAckToPebble(getApplicationContext(), transactionId);
@@ -37,19 +48,27 @@ public class PebbleService extends Service {
                     if (sp.contains("thechosenphone"))
                         number = sp.getString("thechosenphone", "");
                     else
-                        number = "tel:3012817202";
-
-                    Intent intent = new Intent(Intent.ACTION_CALL);
-                    intent.setData(Uri.parse(number));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-                    startActivity(intent);
+                        number = "3012817202";
+                    SmsManager sms = SmsManager.getDefault();
+                    Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
+                    c.moveToFirst();
+                    sms.sendTextMessage("sms:" + number, null,
+                            "My name is " + c.getString(c.getColumnIndex("display_name")) + ".\nI am in an emergency situation!\nPlease send help to:\n(" + loc.getLatitude() + "," + loc.getLongitude() + ")", null, null);
+                    Intent call_intent = new Intent(Intent.ACTION_CALL);
+                    call_intent.setData(Uri.parse("tel:" + number.toString().trim()));
+                    call_intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    call_intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+                    startActivity(call_intent);
                 }
             }
         });
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (locListener == null) {
+            locListener = new LZoneListener();
+        }
+        locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locListener);
         return START_STICKY;
     }
 
@@ -57,9 +76,27 @@ public class PebbleService extends Service {
         return null;
     }
 
+    private class LZoneListener implements LocationListener {
+        public LZoneListener() {
+            super();
+        }
+
+        public void onLocationChanged(Location location) {
+            loc = new Location(location);
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        public void onProviderEnabled(String provider) {}
+
+        public void onProviderDisabled(String provider) {}
+
+    }
+
     public void onDestroy() {
         if(pdr!=null)
             unregisterReceiver(pdr);
+        locManager.removeUpdates(locListener);
         super.onDestroy();
     }
 }

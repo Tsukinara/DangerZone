@@ -118,7 +118,7 @@ public class MainActivity extends Activity {
                                 builderInner.setMessage(strName);
                                 builderInner.setTitle("Your Selected Item is");
                                 SharedPreferences.Editor editor = pref.edit();
-                                editor.putString("thechosenphone", "tel:" + strName.trim());
+                                editor.putString("thechosenphone", strName.trim());
                                 editor.commit();
                                 builderInner.setPositiveButton("Ok",
                                         new DialogInterface.OnClickListener() {

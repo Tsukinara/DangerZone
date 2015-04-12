@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class DaengerDaemon extends Service {
+    public static boolean isRunning = false;
 
     private Thread daengerThread;
     private LocationManager locManager;
@@ -86,6 +87,7 @@ public class DaengerDaemon extends Service {
         IntentFilter intentFilter = new IntentFilter("service_settings");
         LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         bm.registerReceiver(dataUpdateReceiver, intentFilter);
+        isRunning = true;
     }
 
     @Override
@@ -98,6 +100,7 @@ public class DaengerDaemon extends Service {
 
         done = true;
         daengerThread.interrupt();
+        isRunning = false;
     }
 
     public void createNotification(List<Entry> data) {

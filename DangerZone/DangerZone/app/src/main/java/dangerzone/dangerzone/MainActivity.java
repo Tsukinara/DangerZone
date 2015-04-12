@@ -61,8 +61,6 @@ public class MainActivity extends ListActivity {
 
         setListAdapter(adapter);
 
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
-
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);
     }

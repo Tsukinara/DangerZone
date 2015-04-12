@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -83,7 +81,6 @@ public class DaengerDaemon extends Service {
     }
 
     public void sendDataToMain() {
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         Intent intent = new Intent("refresh");
 
         Bundle bundle = new Bundle();
@@ -145,7 +142,7 @@ public class DaengerDaemon extends Service {
                     downloadWebpage(getURL(), false);
 
                     sendDataToMain();
-                    System.out.println(entries.getNear(loc, 100000).size());
+                    entries.getNear(loc, 100000);
 
                     Thread.sleep(numSecondsPerUpdate*1000);
                 } catch (InterruptedException e) {
@@ -204,7 +201,6 @@ public class DaengerDaemon extends Service {
         InputStream is = null;
         // Only display the first 500 characters of the retrieved
         // web page content.
-        int len = 500000;
 
         try {
             URL url = new URL(myurl);
@@ -215,12 +211,10 @@ public class DaengerDaemon extends Service {
             conn.setDoInput(true);
             // Starts the query
             conn.connect();
-            int response = conn.getResponseCode();
-            Log.d("HttpExample", "The response is: " + response);
             is = conn.getInputStream();
 
             // Convert the InputStream into a string
-            readIt(is, len, init);
+            readIt(is, init);
 
             // Makes sure that the InputStream is closed after the app is
             // finished using it.
@@ -231,7 +225,7 @@ public class DaengerDaemon extends Service {
         }
     }
 
-    public void readIt(InputStream stream, int len, boolean init) throws IOException {
+    public void readIt(InputStream stream, boolean init) throws IOException {
         XmlParser parser = new XmlParser();
         try {
             if (init)

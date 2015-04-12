@@ -10,8 +10,10 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,7 +26,8 @@ public class MainActivity extends Activity {
     private DataUpdateReceiver dataUpdateReceiver;
     private EntryList entries;
     private Location loc;
-    private int radius = 100000, recency = 3, rate = 5;
+    private double radius = 100000;
+    private int recency = 3, rate = 5;
 
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
@@ -80,12 +83,13 @@ public class MainActivity extends Activity {
     }
 
     public void onRadiusClicked(View view) {
-        final int tmp_rady[] = {radius};
+        final int tmp_rady[] = {((int)radius)};
         final Context context = this;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.radius_settings);
         TextView text = new TextView(this);
         text.setText("How cautious are you feeling?");
+        text.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout linlay = new LinearLayout(this);
         linlay.setOrientation(LinearLayout.VERTICAL);
         SeekBar radseek = new SeekBar(this);
@@ -96,6 +100,7 @@ public class MainActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tmp_rady[0] = progress;
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
             }
@@ -110,7 +115,7 @@ public class MainActivity extends Activity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                radius = tmp_rady[0];
+                radius = tmp_rady[0] + 0.0;
                 Intent intent = new Intent("service_settings");
                 intent.putExtra("radius", radius);
                 LocalBroadcastManager bm = LocalBroadcastManager.getInstance(context);
@@ -129,19 +134,105 @@ public class MainActivity extends Activity {
     }
 
     public void onRecencyClicked(View view) {
-        Intent intent = new Intent("service_settings");
-        intent.putExtra("days", 5);
+        final Context context = this;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.recency_settings);
+        LinearLayout linlay = new LinearLayout(this);
+        LinearLayout sublinlay = new LinearLayout(this);
+        linlay.setOrientation(LinearLayout.VERTICAL);
+        sublinlay.setOrientation(LinearLayout.HORIZONTAL);
+        TextView text = new TextView(this);
+        TextView units = new TextView(this);
+        text.setText("Only consider events within the last");
+        text.setGravity(Gravity.CENTER_HORIZONTAL);
+        units.setText("days.");
+        final EditText input = new EditText(this);
+        input.setText("" + recency);
+        linlay.addView(text);
+        sublinlay.addView(input);
+        sublinlay.addView(units);
+        sublinlay.setGravity(Gravity.CENTER_HORIZONTAL);
+        linlay.addView(sublinlay);
+        builder.setView(linlay);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    int newval = Integer.parseInt(input.getText().toString().trim());
+                    if (newval >= 0) {
+                        recency = newval;
+                        Intent intent = new Intent("service_settings");
+                        intent.putExtra("days", recency);
 
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
-        bm.sendBroadcast(intent);
+                        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(context);
+                        bm.sendBroadcast(intent);
+                    }
+                } catch (NumberFormatException e){
+                    dialog.cancel();
+                }
+
+                Toast.makeText(getApplicationContext(), "Recency Set", Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 
     public void onRateClicked(View view) {
-        Intent intent = new Intent("service_settings");
-        intent.putExtra("update_time", 1);
+        final Context context = this;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.rate_settings);
+        LinearLayout linlay = new LinearLayout(this);
+        LinearLayout sublinlay = new LinearLayout(this);
+        linlay.setOrientation(LinearLayout.VERTICAL);
+        sublinlay.setOrientation(LinearLayout.HORIZONTAL);
+        TextView text = new TextView(this);
+        TextView units = new TextView(this);
+        text.setText("Update your safety status once every");
+        text.setGravity(Gravity.CENTER_HORIZONTAL);
+        units.setText("seconds.");
+        final EditText input = new EditText(this);
+        input.setText("" + rate);
+        linlay.addView(text);
+        sublinlay.addView(input);
+        sublinlay.addView(units);
+        sublinlay.setGravity(Gravity.CENTER_HORIZONTAL);
+        linlay.addView(sublinlay);
+        builder.setView(linlay);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    int newval = Integer.parseInt(input.getText().toString().trim());
+                    if (newval > 0) {
+                        rate = newval;
+                        Intent intent = new Intent("service_settings");
+                        intent.putExtra("update_time", rate);
 
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
-        bm.sendBroadcast(intent);
+                        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(context);
+                        bm.sendBroadcast(intent);
+                    }
+                } catch (NumberFormatException e){
+                    dialog.cancel();
+                }
+
+                Toast.makeText(getApplicationContext(), "Query Rate Set", Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
     }
 
     public void onForceClicked(View view) {

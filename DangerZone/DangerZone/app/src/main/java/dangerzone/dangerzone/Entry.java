@@ -1,11 +1,14 @@
 package dangerzone.dangerzone;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 
 /**
  * Created by Patrick on 4/11/2015
  */
-public class Entry {
+public class Entry implements Parcelable {
     public int ccn;
     public Date reportdatetime;
     public String offense;
@@ -15,6 +18,50 @@ public class Entry {
     public double blockycoord;
     public double latitude;
     public double longitude;
+
+    public Entry() {
+
+    }
+
+    //Parcels
+    public static final Parcelable.Creator<Entry> CREATOR
+            = new Parcelable.Creator<Entry>() {
+        public Entry createFromParcel(Parcel in) {
+            return new Entry(in);
+        }
+
+        public Entry[] newArray(int size) {
+            return new Entry[size];
+        }
+    };
+
+    public Entry(Parcel in) {
+        ccn = in.readInt();
+        reportdatetime = new Date(in.readLong());
+        offense = in.readString();
+        method = in.readString();
+        blocksiteaddress = in.readString();
+        blockxcoord = in.readDouble();
+        blockycoord = in.readDouble();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+    }
+
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(ccn);
+        dest.writeLong(reportdatetime.getTime());
+        dest.writeString(offense);
+        dest.writeString(method);
+        dest.writeString(blocksiteaddress);
+        dest.writeDouble(blockxcoord);
+        dest.writeDouble(blockycoord);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+    }
+
+    public int describeContents() {
+        return 0;
+    }
 
     //Affine transformation for approximation
 

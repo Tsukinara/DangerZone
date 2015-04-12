@@ -2,8 +2,11 @@ package dangerzone.myapplication;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -14,12 +17,13 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.util.UUID;
 
+import com.getpebble.android.kit.PebbleKit;
+import com.getpebble.android.kit.util.PebbleDictionary;
 
 public class MainActivity extends Activity {
 
-    private final static UUID PEBBLE_APP_UUID = UUID.fromString("56bdf9e4-1cbd-4840-b615-464bd4a002de");
+    private BroadcastReceiver pdr;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +50,12 @@ public class MainActivity extends Activity {
                 final TextView seekvalue = new TextView(getApplicationContext());
                 seekvalue.setGravity(Gravity.CENTER);
                 final SeekBar seek=new SeekBar(getApplicationContext());
+                final SharedPreferences pref = getSharedPreferences("dangerzone", Context.MODE_PRIVATE);
                 seek.setMax(10);
-                seek.setProgress(5);
+                if(pref.contains("countdown"))
+                    seek.setProgress(pref.getInt("countdown", -1));
+                else
+                    seek.setProgress(5);
                 seekvalue.setText(String.valueOf(seek.getProgress() + 5) + " seconds");
                 seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -67,6 +75,12 @@ public class MainActivity extends Activity {
                 alert.setView(linear);
                 alert.setPositiveButton("Ok",new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int id){
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putInt("countdown",seek.getProgress());
+                        editor.commit();
+                        PebbleDictionary pd = new PebbleDictionary();
+                        pd.addUint8(0,(byte) seek.getProgress());
+                        PebbleKit.sendDataToPebble(getApplicationContext(), Constants.PEBBLE_APP_UUID, pd);
                         Toast.makeText(getApplicationContext(), "Time Set: " + seekvalue.getText(), Toast.LENGTH_LONG).show();
                     }
                 });
@@ -137,29 +151,20 @@ public class MainActivity extends Activity {
                 startActivity(about_intent);
             }
         });
-
-        /*PebbleKit.registerPebbleConnectedReceiver(getApplicationContext(), new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                System.out.println("Pebble connected!");
-            }
-
-        });
-        PebbleKit.registerPebbleDisconnectedReceiver(getApplicationContext(), new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                System.out.println("Pebble disconnected!");
-            }
-
-        });
-        PebbleKit.registerReceivedDataHandler(this, new PebbleKit.PebbleDataReceiver(PEBBLE_APP_UUID) {
+        pdr = PebbleKit.registerReceivedDataHandler(this, new PebbleKit.PebbleDataReceiver(Constants.PEBBLE_APP_UUID) {
             public void receiveData(final Context context, final int transactionId, final PebbleDictionary data) {
-                Log.i(getLocalClassName(), "Received value=" + data.getInteger(0) + " for key: 0");
-
+                System.out.println("Hello!");
                 PebbleKit.sendAckToPebble(getApplicationContext(), transactionId);
+                String number = "tel:3012817202";
+                Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse(number));
+                startActivity(callIntent);
             }
+        });
+    }
 
-        });*/
-        /*String number = "tel:3012817202";
-        Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse(number));
-        startActivity(callIntent);*/
+    protected void onDestroy(){
+        if(pdr!=null)
+            unregisterReceiver(pdr);
+        super.onDestroy();
     }
 }

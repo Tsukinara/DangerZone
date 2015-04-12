@@ -1,5 +1,7 @@
 package dangerzone.myapplication;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -7,6 +9,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.getpebble.android.kit.PebbleKit;
+import com.getpebble.android.kit.util.PebbleDictionary;
 
 public class PasscodeActivity extends ActionBarActivity {
 
@@ -16,8 +21,8 @@ public class PasscodeActivity extends ActionBarActivity {
     final int PASSCODE_LEN = 5;
     final int grey = Color.rgb(238,238,238);
     final int yellow = Color.parseColor("yellow");
-    String new_string;
-    String confirm_string;
+    String new_string = "";
+    String confirm_string = "";
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +31,26 @@ public class PasscodeActivity extends ActionBarActivity {
         final TextView current_passcode = (TextView) findViewById(R.id.current_passcode);
         final TextView new_passcode = (TextView) findViewById(R.id.new_passcode);
         final TextView confirm_passcode = (TextView) findViewById(R.id.confirm_passcode);
+        final SharedPreferences pref = getSharedPreferences("dangerzone", Context.MODE_PRIVATE);
+        int i = -1;
+        if(pref.contains("passcode"))
+            i = pref.getInt("passcode", -1);
+        if(i!=-1){
+            String tmp = String.valueOf(i);
+            for(int t = 0;t<tmp.length();t++)
+                switch(tmp.charAt(t)){
+                    case '1':
+                        current_passcode.append(UP_CHAR);
+                        break;
+                    case '2':
+                        current_passcode.append(MID_CHAR);
+                        break;
+                    case '3':
+                        current_passcode.append(DOWN_CHAR);
+                        break;
+                    default:
+                }
+        }
         new_passcode.setBackgroundColor(yellow);
         Button up_button = (Button) findViewById(R.id.up_button);
         Button mid_button = (Button) findViewById(R.id.mid_button);
@@ -97,6 +122,12 @@ public class PasscodeActivity extends ActionBarActivity {
                         Toast.makeText(getApplicationContext(), "Mismatch: Human is dumb!", Toast.LENGTH_LONG).show();
                     else {
                         current_passcode.setText(confirm_passcode.getText());
+                        SharedPreferences.Editor editor = pref.edit();
+                        editor.putInt("passcode",Integer.valueOf(confirm_string));
+                        editor.commit();
+                        PebbleDictionary pd = new PebbleDictionary();
+                        pd.addString(1, confirm_string);
+                        PebbleKit.sendDataToPebble(getApplicationContext(), Constants.PEBBLE_APP_UUID, pd);
                         Toast.makeText(getApplicationContext(), "Passcode set!", Toast.LENGTH_LONG).show();
                     }
                     new_string = "";

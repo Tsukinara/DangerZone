@@ -57,14 +57,12 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         entries = new EntryList();
 
         adapter = new EntryAdapter(this.getApplicationContext(), new ArrayList<EntryWrapper>());
 
-        ListView view = (ListView) findViewById(R.id.list);
-        view.setAdapter(adapter);
+        setListAdapter(adapter);
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);

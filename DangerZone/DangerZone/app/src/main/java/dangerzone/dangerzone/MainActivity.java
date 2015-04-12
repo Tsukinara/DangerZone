@@ -5,12 +5,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 public class MainActivity extends ListActivity {
 
     private ArrayAdapter<String> adapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +27,10 @@ public class MainActivity extends ListActivity {
         startService(intent);
     }
 
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id){
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -39,6 +44,7 @@ public class MainActivity extends ListActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        super.onOptionsItemSelected(item);
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement

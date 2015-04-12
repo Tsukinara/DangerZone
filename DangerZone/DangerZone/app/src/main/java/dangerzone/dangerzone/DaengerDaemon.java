@@ -6,7 +6,6 @@ import android.app.Service;
 import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v4.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
@@ -21,10 +20,18 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class DaengerDaemon extends Service {
 
     private Thread daengerThread;
+
+    private EntryList entries;
+
+    private final long numSecondsPerUpdate = 5;
 
     public DaengerDaemon() {
 
@@ -32,7 +39,7 @@ public class DaengerDaemon extends Service {
 
     @Override
     public void onCreate() {
-
+        entries = new EntryList();
     }
 
     @Override
@@ -83,18 +90,17 @@ public class DaengerDaemon extends Service {
     private class DaengerThread extends Thread {
         @Override
         public void run() {
+            ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isConnected()) {
+                downloadWebpage(getInitURL(), true);
+            }
+
             while (true) {
                 try {
-                    ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                    NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-                    if (networkInfo != null && networkInfo.isConnected()) {
-                        downloadWebpage("http://data.octo.dc.gov/feeds/crime_incidents/crime_incidents_current.xml");
-                    } else {
-                        System.out.println("Errlopr");
-                    }
-
                     createNotification();
-                    Thread.sleep(5000);
+                    downloadWebpage(getURL(), false);
+                    Thread.sleep(numSecondsPerUpdate*1000);
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -102,16 +108,32 @@ public class DaengerDaemon extends Service {
         }
     }
 
-    private void downloadWebpage(String url) {
+    private String getInitURL() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy", Locale.US);
+        Date endDate = new Date();
+        Date startDate = new Date(endDate.getTime() - 86400000);
+
+        return "http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=XML&date=reportdatetime&from="
+        + dateFormat.format(startDate)
+        + "%2012:00:00%20AM&to="
+        + dateFormat.format(endDate)
+        + "%2011:59:00%20PM&dataset=ASAP&datasetid=3&whereInd=0&areaInd=0&whatInd=1&dateInd=0&whenInd=4&disposition=attachment";
+    }
+
+    private String getURL() {
+        return "http://data.octo.dc.gov/feeds/crime_incidents/crime_incidents_current.xml";
+    }
+
+    private void downloadWebpage(String url, boolean init) {
         // params comes from the execute() call: params[0] is the url.
         try {
-            System.out.println(downloadUrl(url));
+            downloadUrl(url, init);
         } catch (IOException e) {
             System.out.println("Unable to retrieve web page. URL may be invalid.");
         }
     }
 
-    private String downloadUrl(String myurl) throws IOException {
+    private void downloadUrl(String myurl, boolean init) throws IOException {
         InputStream is = null;
         // Only display the first 500 characters of the retrieved
         // web page content.
@@ -131,7 +153,8 @@ public class DaengerDaemon extends Service {
             is = conn.getInputStream();
 
             // Convert the InputStream into a string
-            return readIt(is, len);
+            readIt(is, len, init);
+            System.out.println(entries);
 
             // Makes sure that the InputStream is closed after the app is
             // finished using it.
@@ -142,12 +165,15 @@ public class DaengerDaemon extends Service {
         }
     }
 
-    public String readIt(InputStream stream, int len) throws IOException {
+    public void readIt(InputStream stream, int len, boolean init) throws IOException {
         XmlParser parser = new XmlParser();
         try {
-            return parser.parse(stream).toString();
+            if (init)
+                entries.addLatest(parser.parseInitial(stream));
+            else
+                entries.addLatest(parser.parse(stream));
         } catch (XmlPullParserException | ParseException | NumberFormatException e) {
-            return "Oh no! We are doomed!";
+            System.out.println("Oh no! We are doomed!");
         }
     }
 }

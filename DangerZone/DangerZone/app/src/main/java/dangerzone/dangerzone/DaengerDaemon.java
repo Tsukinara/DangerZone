@@ -12,6 +12,10 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -28,13 +32,16 @@ import java.util.Locale;
 public class DaengerDaemon extends Service {
 
     private Thread daengerThread;
+    private LocationManager locManager;
+    private LocationListener locListener;
+    protected Location locCurrent;
 
     private EntryList entries;
 
     private final long numSecondsPerUpdate = 5;
 
     public DaengerDaemon() {
-
+        locManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
@@ -74,6 +81,9 @@ public class DaengerDaemon extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (locListener == null) {
+            locListener = new LZoneListener();
+        }
         if (daengerThread != null && daengerThread.isAlive()) {
             daengerThread.interrupt();
         }
@@ -88,6 +98,7 @@ public class DaengerDaemon extends Service {
     }
 
     private class DaengerThread extends Thread {
+        private Location loc;
         @Override
         public void run() {
             ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -98,6 +109,16 @@ public class DaengerDaemon extends Service {
 
             while (true) {
                 try {
+                    if (networkInfo != null && networkInfo.isConnected()) {
+                        downloadWebpage(getURL(), false);
+                    } else {
+                        System.out.println("Errlopr");
+                    }
+                    synchronized (locCurrent) {
+                        loc = new Location(locCurrent);
+                    }
+                    System.out.println(loc.getLatitude() + loc.getLongitude() + "\n");
+					
                     createNotification();
                     downloadWebpage(getURL(), false);
                     Thread.sleep(numSecondsPerUpdate*1000);
@@ -122,6 +143,26 @@ public class DaengerDaemon extends Service {
 
     private String getURL() {
         return "http://data.octo.dc.gov/feeds/crime_incidents/crime_incidents_current.xml";
+    }
+	
+    private class LZoneListener implements LocationListener {
+        public LZoneListener() {
+            super();
+        }
+
+        public void onLocationChanged(Location location) {
+            // Called when a new location is found by the network location provider.
+            synchronized (locCurrent) {
+                locCurrent = new Location(location);
+            }
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        public void onProviderEnabled(String provider) {}
+
+        public void onProviderDisabled(String provider) {}
+
     }
 
     private void downloadWebpage(String url, boolean init) {

@@ -89,6 +89,12 @@ public class DaengerDaemon extends Service {
         Bundle bundle = new Bundle();
         bundle.putParcelable("data", entries);
 
+        Location loc;
+        synchronized (monitor) {
+            loc = new Location(locCurrent);
+        }
+        bundle.putParcelable("location", loc);
+
         intent.putExtra("data", bundle);
 
         sendBroadcast(intent);

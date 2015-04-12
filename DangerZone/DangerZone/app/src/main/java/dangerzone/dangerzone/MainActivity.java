@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import android.widget.ImageButton;
 
 public class MainActivity extends Activity {
     private DataUpdateReceiver dataUpdateReceiver;
@@ -42,10 +43,24 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         entries = new EntryList();
+        loc = new Location("poi");
+
+        if (savedInstanceState != null) {
+            entries = savedInstanceState.getParcelable("entries");
+            loc = savedInstanceState.getParcelable("location");
+        }
 
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("entries", entries);
+        outState.putParcelable("location", loc);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -140,12 +155,19 @@ public class MainActivity extends Activity {
         Intent intent = new Intent("service_settings");
         intent.putExtra("stop", 1);
 
+        ImageButton button = (ImageButton) findViewById(R.id.stop);
+        button.setImageResource(R.drawable.service_start_button);
+
         LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         bm.sendBroadcast(intent);
     }
 
     public void onListClicked(View view) {
         Intent intent = new Intent(this, ListActivity.class);
+
+        intent.putExtra("entries", entries);
+        intent.putExtra("location", loc);
+
         startActivity(intent);
     }
 

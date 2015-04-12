@@ -42,6 +42,7 @@ public class DaengerDaemon extends Service {
     private EntryList entries;
 
     private DataUpdateReceiver dataUpdateReceiver;
+    private boolean done;
 
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
@@ -95,6 +96,9 @@ public class DaengerDaemon extends Service {
 
         LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         if (dataUpdateReceiver != null) bm.unregisterReceiver(dataUpdateReceiver);
+
+        done = true;
+        daengerThread.interrupt();
     }
 
     public void createNotification() {
@@ -171,19 +175,17 @@ public class DaengerDaemon extends Service {
         }
     }
 
-    private void forceUpdate() {
+    private synchronized void forceUpdate() {
         if (daengerThread != null && daengerThread.isAlive()) {
             daengerThread.interrupt();
         }
-        daengerThread = new DaengerThread();
-        daengerThread.start();
     }
 
     private class DaengerThread extends Thread {
         private Location loc;
         @Override
         public void run() {
-            while (true) {
+            while (!done) {
                 try {
                     queryWebpage();
                     synchronized (monitor) {
@@ -200,7 +202,7 @@ public class DaengerDaemon extends Service {
 
                     Thread.sleep(numSecondsPerUpdate*1000);
                 } catch (InterruptedException e) {
-                    break;
+                    continue;
                 }
             }
         }

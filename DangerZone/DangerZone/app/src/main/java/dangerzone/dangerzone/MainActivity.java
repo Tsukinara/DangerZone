@@ -53,9 +53,11 @@ public class MainActivity extends Activity {
             loc = savedInstanceState.getParcelable("location");
         }
 
-
-        Intent intent = new Intent(this, DaengerDaemon.class);
-        startService(intent);
+        if (!DaengerDaemon.isRunning) {
+            Intent intent = new Intent(this, DaengerDaemon.class);
+            startService(intent);
+            DaengerDaemon.isRunning = true;
+        }
     }
 
     @Override
@@ -245,13 +247,24 @@ public class MainActivity extends Activity {
 
     public void onStopClicked(View view) {
         Intent intent = new Intent("service_settings");
-        intent.putExtra("stop", 1);
 
-        ImageButton button = (ImageButton) findViewById(R.id.stop);
-        button.setImageResource(R.drawable.service_start_button);
+        if (DaengerDaemon.isRunning) {
+            intent.putExtra("stop", 1);
 
-        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
-        bm.sendBroadcast(intent);
+            ImageButton button = (ImageButton) findViewById(R.id.stop);
+            button.setImageResource(R.drawable.service_start_button);
+
+            LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+            bm.sendBroadcast(intent);
+        } else {
+            Intent intent2 = new Intent(this, DaengerDaemon.class);
+
+            ImageButton button = (ImageButton) findViewById(R.id.stop);
+            button.setImageResource(R.drawable.service_stop_button);
+
+            startService(intent2);
+            DaengerDaemon.isRunning = true;
+        }
     }
 
     public void onListClicked(View view) {

@@ -76,10 +76,10 @@ public class MainActivity extends Activity {
                 alert.setPositiveButton("Ok",new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int id){
                         SharedPreferences.Editor editor = pref.edit();
-                        editor.putInt("countdown",seek.getProgress());
+                        editor.putInt("countdown", seek.getProgress());
                         editor.commit();
                         PebbleDictionary pd = new PebbleDictionary();
-                        pd.addUint8(0,(byte) seek.getProgress());
+                        pd.addUint8(0,(byte) (seek.getProgress() + 5));
                         PebbleKit.sendDataToPebble(getApplicationContext(), Constants.PEBBLE_APP_UUID, pd);
                         Toast.makeText(getApplicationContext(), "Time Set: " + seekvalue.getText(), Toast.LENGTH_LONG).show();
                     }
@@ -98,11 +98,11 @@ public class MainActivity extends Activity {
                 alert.setTitle("Select Emergency Number");
                 final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this,
                         android.R.layout.select_dialog_singlechoice);
-                arrayAdapter.add("911");
-                arrayAdapter.add("420");
-                arrayAdapter.add("42");
-                arrayAdapter.add("69");
-                arrayAdapter.add("1337");
+                final SharedPreferences pref = getSharedPreferences("dangerzone", Context.MODE_PRIVATE);
+                if(pref.contains("phonenumbers"))
+                    arrayAdapter.addAll(pref.getStringSet("phonenumbers", null));
+                else
+                    arrayAdapter.add("911");
                 alert.setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -118,6 +118,9 @@ public class MainActivity extends Activity {
                                         MainActivity.this);
                                 builderInner.setMessage(strName);
                                 builderInner.setTitle("Your Selected Item is");
+                                SharedPreferences.Editor editor = pref.edit();
+                                editor.putString("thechosenphone", "tel:" + strName.trim());
+                                editor.commit();
                                 builderInner.setPositiveButton("Ok",
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(
@@ -155,7 +158,12 @@ public class MainActivity extends Activity {
             public void receiveData(final Context context, final int transactionId, final PebbleDictionary data) {
                 System.out.println("Hello!");
                 PebbleKit.sendAckToPebble(getApplicationContext(), transactionId);
-                String number = "tel:3012817202";
+                final SharedPreferences pref = getSharedPreferences("dangerzone", Context.MODE_PRIVATE);
+                String number;
+                if(pref.contains("thechosenphone"))
+                    number = pref.getString("thechosenphone", "");
+                else
+                    number = "tel:3012817202";
                 Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse(number));
                 startActivity(callIntent);
             }

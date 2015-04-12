@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 
+import java.util.List;
+
 public class MainActivity extends Activity {
     private DataUpdateReceiver dataUpdateReceiver;
     private EntryList entries;
@@ -54,11 +56,19 @@ public class MainActivity extends Activity {
     }
 
     public void onRadiusClicked(View view) {
+        Intent intent = new Intent("service_settings");
+        intent.putExtra("radius", 500);
 
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        bm.sendBroadcast(intent);
     }
 
     public void onRecencyClicked(View view) {
+        Intent intent = new Intent("service_settings");
+        intent.putExtra("days", 5);
 
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        bm.sendBroadcast(intent);
     }
 
     public void onRateClicked(View view) {
@@ -70,15 +80,24 @@ public class MainActivity extends Activity {
     }
 
     public void onForceClicked(View view) {
+        Intent intent = new Intent("service_settings");
+        intent.putExtra("refresh", 1);
 
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        bm.sendBroadcast(intent);
     }
 
     public void onStopClicked(View view) {
+        Intent intent = new Intent("service_settings");
+        intent.putExtra("stop", 1);
 
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        bm.sendBroadcast(intent);
     }
 
     public void onListClicked(View view) {
-
+        Intent intent = new Intent(this, ListActivity.class);
+        startActivity(intent);
     }
 
     public void onAboutClicked(View view) {

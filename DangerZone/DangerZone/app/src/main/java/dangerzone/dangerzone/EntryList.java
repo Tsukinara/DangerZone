@@ -16,11 +16,8 @@ import java.util.List;
 public class EntryList implements Parcelable{
     private HashMap<Integer, Entry> entries;
 
-    private long expiration;
-
     public EntryList() {
         entries = new HashMap<>();
-        expiration = 86400000*3;
     }
 
     //Parcels
@@ -64,9 +61,9 @@ public class EntryList implements Parcelable{
         }
     }
 
-    public void expire() {
+    public void expire(int days) {
         Date date = new Date();
-        Date minDate = new Date(date.getTime() - expiration);
+        Date minDate = new Date(date.getTime() - 86400000*days);
 
         List<Integer> keysToDelete = new ArrayList<>();
 

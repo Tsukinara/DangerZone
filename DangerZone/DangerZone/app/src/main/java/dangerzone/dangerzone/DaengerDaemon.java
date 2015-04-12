@@ -47,20 +47,21 @@ public class DaengerDaemon extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("service_settings")) {
-                numSecondsPerUpdate = intent.getIntExtra("update_time", numSecondsPerUpdate);
+                if (intent.hasExtra("update_time")) {
+                    numSecondsPerUpdate = intent.getIntExtra("update_time", numSecondsPerUpdate);
+                    forceUpdate();
+                }
                 if (intent.hasExtra("refresh")) {
-                    new Thread() {
-                        public void run() {
-                            queryWebpage();
-                            createNotification();
-                            sendDataToMain();
-                        }
-                    }.start();
+                    forceUpdate();
                 }
                 radius = intent.getDoubleExtra("radius", radius);
                 if (intent.hasExtra("days")) {
                     days = intent.getIntExtra("days", days);
                     hasMostData = false;
+                    forceUpdate();
+                }
+                if (intent.hasExtra("stop")) {
+                    stopSelf();
                 }
             }
         }
@@ -168,6 +169,14 @@ public class DaengerDaemon extends Service {
             }
             hasMostData = true;
         }
+    }
+
+    private void forceUpdate() {
+        if (daengerThread != null && daengerThread.isAlive()) {
+            daengerThread.interrupt();
+        }
+        daengerThread = new DaengerThread();
+        daengerThread.start();
     }
 
     private class DaengerThread extends Thread {
@@ -280,7 +289,7 @@ public class DaengerDaemon extends Service {
                 entries.addLatest(parser.parseInitial(stream));
             else
                 entries.addLatest(parser.parse(stream));
-            entries.expire();
+            entries.expire(days);
         } catch (XmlPullParserException | ParseException | NumberFormatException e) {
             System.out.println("Oh no! We are doomed!");
         }

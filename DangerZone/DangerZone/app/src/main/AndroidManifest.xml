@@ -31,6 +31,7 @@
         <activity
             android:name=".EntryActivity"
             android:label="@string/title_activity_entry"
+            android:theme="@android:style/Theme.Holo.Light.Dialog"
             android:parentActivityName=".ListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

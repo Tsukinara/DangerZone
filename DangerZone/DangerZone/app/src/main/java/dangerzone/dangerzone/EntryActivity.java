@@ -1,5 +1,6 @@
 package dangerzone.dangerzone;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
@@ -12,14 +13,13 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 
-public class EntryActivity extends ActionBarActivity {
+public class EntryActivity extends Activity {
     private EntryWrapper wrapper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entry);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         wrapper = getIntent().getParcelableExtra("wrapper");
 
         TextView textView = (TextView) findViewById(R.id.entryTextView);
@@ -29,7 +29,9 @@ public class EntryActivity extends ActionBarActivity {
         if (!wrapper.entry.method.equals("OTHERS"))
             builder.append("Method: ").append(wrapper.entry.method).append("\n");
         builder.append("Reported: ").append(SimpleDateFormat.getDateTimeInstance().format(wrapper.entry.reportdatetime)).append("\n");
-        builder.append("Distance: ").append((int)Math.floor(wrapper.dist)).append(" meters\n");
+        if (wrapper.valid) {
+            builder.append("Distance: ").append((int) Math.floor(wrapper.dist)).append(" meters\n");
+        }
         builder.append("Location: ").append(wrapper.entry.blocksiteaddress).append("\n");
         builder.append("Latitude: ").append(wrapper.entry.latitude).append("°N\n");
         builder.append("Longitude: ").append(-wrapper.entry.longitude).append("°W");

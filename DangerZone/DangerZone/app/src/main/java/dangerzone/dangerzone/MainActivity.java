@@ -1,5 +1,6 @@
 package dangerzone.dangerzone;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,13 +8,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -59,11 +57,14 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
         entries = new EntryList();
 
         adapter = new EntryAdapter(this.getApplicationContext(), new ArrayList<EntryWrapper>());
 
-        setListAdapter(adapter);
+        ListView view = (ListView) findViewById(R.id.list);
+        view.setAdapter(adapter);
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);

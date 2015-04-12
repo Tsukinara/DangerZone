@@ -3,6 +3,8 @@ package dangerzone.dangerzone;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -15,6 +17,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -34,10 +37,40 @@ public class DaengerDaemon extends Service {
     private LocationListener locListener;
     protected Location locCurrent;
     protected final Object monitor = new Object();
+    protected final Object entriesMonitor = new Object();
 
     private EntryList entries;
 
-    private final long numSecondsPerUpdate = 5;
+    private DataUpdateReceiver dataUpdateReceiver;
+
+    private class DataUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("service_settings")) {
+                numSecondsPerUpdate = intent.getIntExtra("update_time", numSecondsPerUpdate);
+                if (intent.hasExtra("refresh")) {
+                    new Thread() {
+                        public void run() {
+                            queryWebpage();
+                            createNotification();
+                            sendDataToMain();
+                        }
+                    }.start();
+                }
+                radius = intent.getDoubleExtra("radius", radius);
+                if (intent.hasExtra("days")) {
+                    days = intent.getIntExtra("days", days);
+                    hasMostData = false;
+                }
+            }
+        }
+    }
+
+    private boolean hasMostData = false;
+
+    private int numSecondsPerUpdate = 5;
+    private double radius = 100000;
+    private int days = 3;
 
     public DaengerDaemon() {
         locCurrent = new Location("poi");
@@ -47,12 +80,20 @@ public class DaengerDaemon extends Service {
     public void onCreate() {
         locManager = (LocationManager) this.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         entries = new EntryList();
+
+        if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
+        IntentFilter intentFilter = new IntentFilter("service_settings");
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        bm.registerReceiver(dataUpdateReceiver, intentFilter);
     }
 
     @Override
     public void onDestroy() {
         daengerThread.interrupt();
         locManager.removeUpdates(locListener);
+
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        if (dataUpdateReceiver != null) bm.unregisterReceiver(dataUpdateReceiver);
     }
 
     public void createNotification() {
@@ -81,20 +122,23 @@ public class DaengerDaemon extends Service {
     }
 
     public void sendDataToMain() {
-        Intent intent = new Intent("refresh");
+        synchronized (entriesMonitor) {
+            Intent intent = new Intent("refresh");
 
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("data", entries);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("data", entries);
 
-        Location loc;
-        synchronized (monitor) {
-            loc = new Location(locCurrent);
+            Location loc;
+            synchronized (monitor) {
+                loc = new Location(locCurrent);
+            }
+            bundle.putParcelable("location", loc);
+
+            intent.putExtra("data", bundle);
+
+            LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+            bm.sendBroadcast(intent);
         }
-        bundle.putParcelable("location", loc);
-
-        intent.putExtra("data", bundle);
-
-        sendBroadcast(intent);
     }
 
     @Override
@@ -103,11 +147,10 @@ public class DaengerDaemon extends Service {
             locListener = new LZoneListener();
         }
         locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locListener);
-        if (daengerThread != null && daengerThread.isAlive()) {
-            daengerThread.interrupt();
+        if (daengerThread == null || !daengerThread.isAlive()) {
+            daengerThread = new DaengerThread();
+            daengerThread.start();
         }
-        daengerThread = new DaengerThread();
-        daengerThread.start();
         return START_NOT_STICKY;
     }
 
@@ -116,33 +159,35 @@ public class DaengerDaemon extends Service {
         return null;
     }
 
+    private void queryWebpage() {
+        synchronized (entriesMonitor) {
+            if (hasMostData) {
+                downloadWebpage(getURL(), false);
+            } else {
+                downloadWebpage(getInitURL(), true);
+            }
+            hasMostData = true;
+        }
+    }
+
     private class DaengerThread extends Thread {
         private Location loc;
         @Override
         public void run() {
-            ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-            if (networkInfo != null && networkInfo.isConnected()) {
-                downloadWebpage(getInitURL(), true);
-            }
-
             while (true) {
                 try {
-                    if (networkInfo != null && networkInfo.isConnected()) {
-                        downloadWebpage(getURL(), false);
-                    } else {
-                        System.out.println("Errlopr");
-                    }
+                    queryWebpage();
                     synchronized (monitor) {
                         loc = new Location(locCurrent);
                     }
                     System.out.println(loc.getLatitude() + ", " + loc.getLongitude() + "\n");
 					
                     createNotification();
-                    downloadWebpage(getURL(), false);
 
                     sendDataToMain();
-                    entries.getNear(loc, 100000);
+                    synchronized (entriesMonitor) {
+                        entries.getNear(loc, radius);
+                    }
 
                     Thread.sleep(numSecondsPerUpdate*1000);
                 } catch (InterruptedException e) {
@@ -155,7 +200,7 @@ public class DaengerDaemon extends Service {
     private String getInitURL() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy", Locale.US);
         Date endDate = new Date();
-        Date startDate = new Date(endDate.getTime() - 86400000*3);
+        Date startDate = new Date(endDate.getTime() - 86400000*days);
 
         return "http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=XML&date=reportdatetime&from="
         + dateFormat.format(startDate)
@@ -189,11 +234,14 @@ public class DaengerDaemon extends Service {
     }
 
     private void downloadWebpage(String url, boolean init) {
-        // params comes from the execute() call: params[0] is the url.
-        try {
-            downloadUrl(url, init);
-        } catch (IOException e) {
-            System.out.println("Unable to retrieve web page. URL may be invalid.");
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            try {
+                downloadUrl(url, init);
+            } catch (IOException e) {
+                System.out.println("Unable to retrieve web page. URL may be invalid.");
+            }
         }
     }
 

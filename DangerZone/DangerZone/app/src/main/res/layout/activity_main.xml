@@ -1,10 +1,62 @@
 <LinearLayout
+    android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" tools:context=".MainActivity">
 
-    <ListView android:id="@+id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+    <Button
+        android:onClick="onRadiusClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change notification radius"
+        android:id="@+id/radius" />
 
+    <Button
+        android:onClick="onRecencyClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recency preferences"
+        android:id="@+id/recency" />
+
+    <Button
+        android:onClick="onRateClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Adjust query rate"
+        android:id="@+id/rate" />
+
+    <Button
+        android:onClick="onForceClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Force query now"
+        android:id="@+id/force" />
+
+    <Button
+        android:onClick="onStopClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop service"
+        android:id="@+id/stop" />
+
+    <Button
+        android:onClick="onListClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View full list"
+        android:id="@+id/list" />
+
+    <Button
+        android:onClick="onAboutClicked"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="About"
+        android:id="@+id/about" />
 </LinearLayout>

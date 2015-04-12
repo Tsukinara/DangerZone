@@ -4,6 +4,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 
 public class EntryActivity extends ActionBarActivity {
@@ -14,6 +18,17 @@ public class EntryActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entry);
         wrapper = getIntent().getParcelableExtra("wrapper");
+
+        TextView textView = (TextView) findViewById(R.id.entryTextView);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Offense: ").append(wrapper.entry.offense).append("\n");
+        if (!wrapper.entry.method.equals("OTHERS"))
+            builder.append("Method: ").append(wrapper.entry.method).append("\n");
+        builder.append("Date: ").append(SimpleDateFormat.getDateInstance().format(wrapper.entry.reportdatetime)).append("\n");
+        builder.append("Distance: ").append((int)Math.floor(wrapper.dist)).append(" m\n");
+
+        textView.setText(builder.toString() );
     }
 
 

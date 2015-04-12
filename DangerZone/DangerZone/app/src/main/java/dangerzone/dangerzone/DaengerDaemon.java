@@ -1,8 +1,6 @@
 package dangerzone.dangerzone;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
+import android.app.*;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.media.RingtoneManager;
@@ -28,6 +26,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class DaengerDaemon extends Service {
@@ -101,25 +100,53 @@ public class DaengerDaemon extends Service {
         daengerThread.interrupt();
     }
 
-    public void createNotification() {
+    public void createNotification(List<Entry> data) {
+        double minDistance=radius, maxDistance=0;
+
+        Location loc;
+        synchronized (monitor) {
+            loc = new Location(locCurrent);
+        }
+
+        for (Entry e : data) {
+            float[] result = new float[1];
+            Location.distanceBetween(e.latitude, e.longitude, loc.getLatitude(), loc.getLongitude(), result);
+            if (result[0] < minDistance)
+                minDistance = result[0];
+            if (result[0] > maxDistance)
+                maxDistance = result[0];
+        }
+        minDistance = Math.floor(minDistance);
+        maxDistance = Math.floor(maxDistance);
+
+        String distanceStr;
+        if (minDistance == maxDistance)
+            distanceStr = (int)minDistance + " meters away";
+        else
+            distanceStr = (int)minDistance + " to " + (int)maxDistance + " meters away";
+
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.notif_icon_hq)
-                        .setContentTitle("Service Started")
-                        .setContentText("Really.")
+                        .setContentTitle("Warning")
+                        .setContentText("Potentially dangerous area ahead. Please consider activating QuickAlert.")
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
-        Intent resultIntent = new Intent(this, MainActivity.class);
+        Intent resultIntent = new Intent(this, ListActivity.class);
+
+        resultIntent.putExtra("entries", entries);
+        resultIntent.putExtra("location", loc);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 
-        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addParentStack(ListActivity.class);
 
         stackBuilder.addNextIntent(resultIntent);
 
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
+        mBuilder.setAutoCancel(true);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -192,8 +219,12 @@ public class DaengerDaemon extends Service {
                         loc = new Location(locCurrent);
                     }
                     System.out.println(loc.getLatitude() + ", " + loc.getLongitude() + "\n");
-					
-                    createNotification();
+
+                    List<Entry> local = entries.getNear(loc, radius);
+                    if (local.size() > 0) {
+                        createNotification(local);
+                        entries.cover(local);
+                    }
 
                     sendDataToMain();
                     synchronized (entriesMonitor) {

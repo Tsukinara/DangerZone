@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -15,9 +16,11 @@ import java.util.List;
  */
 public class EntryList implements Parcelable{
     private HashMap<Integer, Entry> entries;
+    private HashSet<Integer> covered;
 
     public EntryList() {
         entries = new HashMap<>();
+        covered = new HashSet<>();
     }
 
     //Parcels
@@ -39,12 +42,21 @@ public class EntryList implements Parcelable{
             Entry e = in.readParcelable(Entry.class.getClassLoader());
             entries.put(e.ccn, e);
         }
+        int size2 = in.readInt();
+        for (int i=0; i<size2; i++) {
+            int ccn = in.readInt();
+            covered.add(ccn);
+        }
     }
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(entries.size());
         for (Entry e : entries.values()) {
             dest.writeParcelable(e, flags);
+        }
+        dest.writeInt(covered.size());
+        for (int ccn : covered) {
+            dest.writeInt(ccn);
         }
     }
 
@@ -79,11 +91,17 @@ public class EntryList implements Parcelable{
         }
     }
 
+    public void cover(List<Entry> toCover) {
+        for (Entry e : toCover) {
+            covered.add(e.ccn);
+        }
+    }
+
     public List<Entry> getNear(Location location, double threshold) {
         List<Entry> output = new ArrayList<>();
 
         for (Entry e : entries.values()) {
-            if (e.distTo(location) < threshold) {
+            if (!covered.contains(e.ccn) && e.distTo(location) < threshold) {
                 output.add(e);
             }
         }

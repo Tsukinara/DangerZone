@@ -28,8 +28,11 @@ public class EntryActivity extends ActionBarActivity {
         builder.append("Offense: ").append(wrapper.entry.offense).append("\n");
         if (!wrapper.entry.method.equals("OTHERS"))
             builder.append("Method: ").append(wrapper.entry.method).append("\n");
-        builder.append("Date: ").append(SimpleDateFormat.getDateInstance().format(wrapper.entry.reportdatetime)).append("\n");
-        builder.append("Distance: ").append((int)Math.floor(wrapper.dist)).append(" m\n");
+        builder.append("Reported: ").append(SimpleDateFormat.getDateTimeInstance().format(wrapper.entry.reportdatetime)).append("\n");
+        builder.append("Distance: ").append((int)Math.floor(wrapper.dist)).append(" meters\n");
+        builder.append("Location: ").append(wrapper.entry.blocksiteaddress).append("\n");
+        builder.append("Latitude: ").append(wrapper.entry.latitude).append("°N\n");
+        builder.append("Longitude: ").append(-wrapper.entry.longitude).append("°W");
 
         textView.setText(builder.toString() );
     }

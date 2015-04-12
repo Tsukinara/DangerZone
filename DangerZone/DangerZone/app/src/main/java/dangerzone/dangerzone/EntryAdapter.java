@@ -46,7 +46,7 @@ public class EntryAdapter extends ArrayAdapter {
     public void drawText(TextView textView, EntryWrapper entry){
         String text = entry.entry.offense+"\n";
         if (entry.valid){
-            text += Math.floor(entry.dist);
+            text += (int) Math.floor(entry.dist) + " meters";
         }
         textView.setText(text);
     }

@@ -43,10 +43,6 @@ public class MainActivity extends Activity {
 
         entries = new EntryList();
 
-        Button rady = (Button) findViewById(R.id.radius);
-        Button recency = (Button) findViewById(R.id.recency);
-        Button rate = (Button) findViewById(R.id.rate);
-
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);
@@ -85,7 +81,6 @@ public class MainActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tmp_rady[0] = progress;
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
             }

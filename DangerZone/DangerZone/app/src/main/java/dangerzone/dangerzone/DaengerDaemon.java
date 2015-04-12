@@ -26,7 +26,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class DaengerDaemon extends Service {
@@ -125,6 +124,11 @@ public class DaengerDaemon extends Service {
 					
                     createNotification();
                     downloadWebpage(getURL(), false);
+
+                    entries.expire();
+                    System.out.println(entries);
+                    System.out.println(entries.getNear(loc, 100000).size());
+
                     Thread.sleep(numSecondsPerUpdate*1000);
                 } catch (InterruptedException e) {
                     break;
@@ -136,7 +140,7 @@ public class DaengerDaemon extends Service {
     private String getInitURL() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("M/d/yyyy", Locale.US);
         Date endDate = new Date();
-        Date startDate = new Date(endDate.getTime() - 86400000);
+        Date startDate = new Date(endDate.getTime() - 86400000*3);
 
         return "http://data.octo.dc.gov/Attachment.aspx?where=Citywide&area=&what=XML&date=reportdatetime&from="
         + dateFormat.format(startDate)
@@ -199,7 +203,6 @@ public class DaengerDaemon extends Service {
 
             // Convert the InputStream into a string
             readIt(is, len, init);
-            System.out.println(entries);
 
             // Makes sure that the InputStream is closed after the app is
             // finished using it.

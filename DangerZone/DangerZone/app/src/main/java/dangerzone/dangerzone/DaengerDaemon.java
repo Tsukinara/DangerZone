@@ -32,19 +32,21 @@ public class DaengerDaemon extends Service {
     private LocationManager locManager;
     private LocationListener locListener;
     protected Location locCurrent;
+    protected final Object monitor = new Object();
 
     public DaengerDaemon() {
-        locManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locCurrent = new Location("poi");
     }
 
     @Override
     public void onCreate() {
-
+        locManager = (LocationManager) this.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
     public void onDestroy() {
         daengerThread.interrupt();
+        locManager.removeUpdates(locListener);
     }
 
     public void createNotification() {
@@ -77,6 +79,7 @@ public class DaengerDaemon extends Service {
         if (locListener == null) {
             locListener = new LZoneListener();
         }
+        locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locListener);
         if (daengerThread != null && daengerThread.isAlive()) {
             daengerThread.interrupt();
         }
@@ -103,11 +106,11 @@ public class DaengerDaemon extends Service {
                     } else {
                         System.out.println("Errlopr");
                     }
-                    synchronized (locCurrent) {
+                    synchronized (monitor) {
                         loc = new Location(locCurrent);
                     }
-                    System.out.println(loc.getLatitude() + loc.getLongitude() + "\n");
-                    createNotification();
+                    System.out.println(loc.getLatitude() + ", " + loc.getLongitude() + "\n");
+                    //createNotification();
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     break;
@@ -123,7 +126,7 @@ public class DaengerDaemon extends Service {
 
         public void onLocationChanged(Location location) {
             // Called when a new location is found by the network location provider.
-            synchronized (locCurrent) {
+            synchronized (monitor) {
                 locCurrent = new Location(location);
             }
         }

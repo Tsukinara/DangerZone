@@ -8,17 +8,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
+import android.view.View;
 import android.widget.ListView;
+import java.util.ArrayList;
+import java.util.Comparator;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ListActivity {
 
-    private ArrayAdapter<String> adapter;
+    private EntryAdapter adapter;
     private DataUpdateReceiver dataUpdateReceiver;
-
     private EntryList entries;
     private Location loc;
 
@@ -37,20 +37,22 @@ public class MainActivity extends Activity {
     private void updateList() {
         adapter.clear();
         for (Entry e : entries.getValues()) {
-            String str;
-            if (loc.getProvider().equals("poi")) {
-                str = e.offense;
-            } else {
-                float[] distance = new float[1];
-                Location.distanceBetween(e.latitude, e.longitude, loc.getLatitude(), loc.getLongitude(), distance);
-                str = e.offense + "\n" +
-                        Math.floor(distance[0]) +
-                        "m";
-            }
-            adapter.add(str);
+            adapter.add(new EntryWrapper(e, loc, loc.getProvider().equals("poi")));
         }
+        adapter.sort(new Comparator<EntryWrapper>(){
+            @Override
+            public int compare(EntryWrapper lhs, EntryWrapper rhs) {
+                int out = 0;
+                if (lhs.valid && rhs.valid){
+                    out = (new Double(lhs.dist)).compareTo(new Double(rhs.dist));
+                }
+                if (out == 0){
+                    out = -lhs.entry.reportdatetime.compareTo(rhs.entry.reportdatetime);
+                }
+                return out;
+            }
+        });
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,15 +61,18 @@ public class MainActivity extends Activity {
 
         entries = new EntryList();
 
-        adapter = new ArrayAdapter<>(this, R.layout.list_element);
-        adapter.add("Hello\nElevator");
-        adapter.add("World");
+        adapter = new EntryAdapter(this.getApplicationContext(), new ArrayList<EntryWrapper>());
 
         ListView view = (ListView) findViewById(R.id.list);
         view.setAdapter(adapter);
 
         Intent intent = new Intent(this, DaengerDaemon.class);
         startService(intent);
+    }
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+
     }
 
     @Override
@@ -96,6 +101,7 @@ public class MainActivity extends Activity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        super.onOptionsItemSelected(item);
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement

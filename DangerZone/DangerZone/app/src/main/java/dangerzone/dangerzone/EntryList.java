@@ -86,9 +86,7 @@ public class EntryList implements Parcelable{
         List<Entry> output = new ArrayList<>();
 
         for (Entry e : entries.values()) {
-            float[] distance = new float[1];
-            Location.distanceBetween(e.latitude, e.longitude, location.getLatitude(), location.getLongitude(), distance);
-            if (distance[0] < threshold) {
+            if (e.distTo(location) < threshold) {
                 output.add(e);
             }
         }

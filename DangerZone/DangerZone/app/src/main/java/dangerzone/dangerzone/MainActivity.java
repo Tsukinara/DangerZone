@@ -88,12 +88,12 @@ public class MainActivity extends Activity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.radius_settings);
         TextView text = new TextView(this);
-        text.setText("How cautious are you feeling?");
+        text.setText("\nHow cautious are you feeling?");
         text.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout linlay = new LinearLayout(this);
         linlay.setOrientation(LinearLayout.VERTICAL);
         SeekBar radseek = new SeekBar(this);
-        radseek.setMax(500000);
+        radseek.setMax(200000);
         radseek.setProgress(tmp_rady[0]);
         radseek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -143,7 +143,7 @@ public class MainActivity extends Activity {
         sublinlay.setOrientation(LinearLayout.HORIZONTAL);
         TextView text = new TextView(this);
         TextView units = new TextView(this);
-        text.setText("Only consider events within the last");
+        text.setText("\nOnly consider events within the last");
         text.setGravity(Gravity.CENTER_HORIZONTAL);
         units.setText("days.");
         final EditText input = new EditText(this);
@@ -194,7 +194,7 @@ public class MainActivity extends Activity {
         sublinlay.setOrientation(LinearLayout.HORIZONTAL);
         TextView text = new TextView(this);
         TextView units = new TextView(this);
-        text.setText("Update your safety status once every");
+        text.setText("\nUpdate your safety status once every");
         text.setGravity(Gravity.CENTER_HORIZONTAL);
         units.setText("seconds.");
         final EditText input = new EditText(this);

@@ -1,6 +1,7 @@
 package dangerzone.dangerzone;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -53,11 +54,8 @@ public class MainActivity extends Activity {
             loc = savedInstanceState.getParcelable("location");
         }
 
-        if (!DaengerDaemon.isRunning) {
-            Intent intent = new Intent(this, DaengerDaemon.class);
-            startService(intent);
-            DaengerDaemon.isRunning = true;
-        }
+        Intent intent = new Intent(this, DaengerDaemon.class);
+        startService(intent);
     }
 
     @Override
@@ -245,10 +243,20 @@ public class MainActivity extends Activity {
         bm.sendBroadcast(intent);
     }
 
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void onStopClicked(View view) {
         Intent intent = new Intent("service_settings");
 
-        if (DaengerDaemon.isRunning) {
+        if (isServiceRunning(DaengerDaemon.class)) {
             intent.putExtra("stop", 1);
 
             ImageButton button = (ImageButton) findViewById(R.id.stop);
@@ -263,7 +271,6 @@ public class MainActivity extends Activity {
             button.setImageResource(R.drawable.service_stop_button);
 
             startService(intent2);
-            DaengerDaemon.isRunning = true;
         }
     }
 

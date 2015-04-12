@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.location.Location;
 import android.location.LocationListener;
@@ -81,6 +82,18 @@ public class DaengerDaemon extends Service {
         mNotificationManager.notify(0, mBuilder.build());
     }
 
+    public void sendDataToMain() {
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        Intent intent = new Intent("refresh");
+
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("data", entries);
+
+        intent.putExtra("data", bundle);
+
+        sendBroadcast(intent);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (locListener == null) {
@@ -125,8 +138,7 @@ public class DaengerDaemon extends Service {
                     createNotification();
                     downloadWebpage(getURL(), false);
 
-                    entries.expire();
-                    System.out.println(entries);
+                    sendDataToMain();
                     System.out.println(entries.getNear(loc, 100000).size());
 
                     Thread.sleep(numSecondsPerUpdate*1000);
@@ -220,6 +232,7 @@ public class DaengerDaemon extends Service {
                 entries.addLatest(parser.parseInitial(stream));
             else
                 entries.addLatest(parser.parse(stream));
+            entries.expire();
         } catch (XmlPullParserException | ParseException | NumberFormatException e) {
             System.out.println("Oh no! We are doomed!");
         }

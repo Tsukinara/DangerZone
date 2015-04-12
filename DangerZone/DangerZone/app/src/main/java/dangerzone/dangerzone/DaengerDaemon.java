@@ -42,6 +42,8 @@ public class DaengerDaemon extends Service {
     private DataUpdateReceiver dataUpdateReceiver;
     private boolean done;
 
+    private int risklevelcache;
+
     private class DataUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -69,7 +71,7 @@ public class DaengerDaemon extends Service {
     private boolean hasMostData = false;
 
     private int numSecondsPerUpdate = 5;
-    private double radius = 100000;
+    private double radius = 10000;
     private int days = 3;
 
     public DaengerDaemon() {
@@ -80,6 +82,8 @@ public class DaengerDaemon extends Service {
     public void onCreate() {
         locManager = (LocationManager) this.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         entries = new EntryList();
+
+        risklevelcache = 0;
 
         if (dataUpdateReceiver == null) dataUpdateReceiver = new DataUpdateReceiver();
         IntentFilter intentFilter = new IntentFilter("service_settings");
@@ -101,23 +105,49 @@ public class DaengerDaemon extends Service {
 
     public void createNotification(List<Entry> data) {
         double minDistance=radius, maxDistance=0;
-
+        double ratio;
+        String notifTitle = "", notifBody = "";
+        int risklevel = 0;
         Location loc;
         synchronized (monitor) {
             loc = new Location(locCurrent);
         }
 
         for (Entry e : data) {
-            float[] result = new float[1];
-            Location.distanceBetween(e.latitude, e.longitude, loc.getLatitude(), loc.getLongitude(), result);
-            if (result[0] < minDistance)
-                minDistance = result[0];
-            if (result[0] > maxDistance)
-                maxDistance = result[0];
+            float result = e.distTo(loc);
+            if (result < minDistance)
+                minDistance = result;
+            if (result > maxDistance)
+                maxDistance = result;
         }
+        ratio = minDistance/radius;
+        if (ratio > 0.8){
+            risklevel = 1;
+        } else {
+            if (ratio > 0.4){
+                risklevel = 2;
+            } else {
+                risklevel = 3;
+            }
+        }
+        if (risklevel <= risklevelcache){
+            return;
+        }
+        risklevelcache = risklevel;
         minDistance = Math.floor(minDistance);
         maxDistance = Math.floor(maxDistance);
 
+        switch (risklevel){
+            case 1:
+                notifTitle = "Caution"; notifBody = "Potentially dangerous area nearby. Exercise caution in isolated areas.";
+                break;
+            case 2:
+                notifTitle = "Warning"; notifBody = "Potentially dangerous area nearby. Please consider activating QuickAlert.";
+                break;
+            case 3:
+                notifTitle = "Alert"; notifBody = "Very dangerous area nearby. Use of QuickAlert highly recommended.";
+                break;
+        }
         String distanceStr;
         if (minDistance == maxDistance)
             distanceStr = (int)minDistance + " meters away";
@@ -127,8 +157,8 @@ public class DaengerDaemon extends Service {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.notif_icon_hq)
-                        .setContentTitle("Warning")
-                        .setContentText("Potentially dangerous area ahead. Please consider activating QuickAlert.")
+                        .setContentTitle(notifTitle)
+                        .setContentText(notifBody)
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
         Intent resultIntent = new Intent(this, ListActivity.class);
@@ -209,17 +239,20 @@ public class DaengerDaemon extends Service {
 
     private class DaengerThread extends Thread {
         private Location loc;
+        private long ctr;
         @Override
         public void run() {
+            ctr = 0;
             while (!done) {
                 try {
                     queryWebpage();
                     synchronized (monitor) {
                         loc = new Location(locCurrent);
                     }
-                    System.out.println(loc.getLatitude() + ", " + loc.getLongitude() + "\n");
+                    //System.out.println(loc.getLatitude() + ", " + loc.getLongitude() + "\n");
 
-                    List<Entry> local = entries.getNear(loc, radius);
+                    List<Entry> local = entries.getNear(loc, radius, false);
+                    //List<Entry> local = entries.getNear(loc, radius, true);
                     if (local.size() > 0) {
                         createNotification(local);
                         entries.cover(local);
@@ -227,7 +260,13 @@ public class DaengerDaemon extends Service {
 
                     sendDataToMain();
                     synchronized (entriesMonitor) {
-                        entries.getNear(loc, radius);
+                        //entries.getNear(loc, radius, true);
+                    }
+
+                    ctr++;
+                    if (ctr >= 3600/numSecondsPerUpdate){
+                        ctr = 0;
+                        risklevelcache -= (risklevelcache == 0)? 0 : 1;
                     }
 
                     Thread.sleep(numSecondsPerUpdate*1000);

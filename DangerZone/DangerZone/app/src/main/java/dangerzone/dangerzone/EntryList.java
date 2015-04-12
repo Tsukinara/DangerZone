@@ -97,11 +97,11 @@ public class EntryList implements Parcelable{
         }
     }
 
-    public List<Entry> getNear(Location location, double threshold) {
+    public List<Entry> getNear(Location location, double threshold, boolean reentrant) {
         List<Entry> output = new ArrayList<>();
 
         for (Entry e : entries.values()) {
-            if (!covered.contains(e.ccn) && e.distTo(location) < threshold) {
+            if (!(reentrant && covered.contains(e.ccn)) && e.distTo(location) < threshold) {
                 output.add(e);
             }
         }

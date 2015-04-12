@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
     private DataUpdateReceiver dataUpdateReceiver;
     private EntryList entries;
     private Location loc;
-    private double radius = 100000;
+    private double radius = 10000;
     private int recency = 3, rate = 5;
 
     private class DataUpdateReceiver extends BroadcastReceiver {
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         LinearLayout linlay = new LinearLayout(this);
         linlay.setOrientation(LinearLayout.VERTICAL);
         SeekBar radseek = new SeekBar(this);
-        radseek.setMax(200000);
+        radseek.setMax(100000);
         radseek.setProgress(tmp_rady[0]);
         radseek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -115,12 +115,12 @@ public class MainActivity extends Activity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                radius = tmp_rady[0] + 0.0;
+                radius = tmp_rady[0] + 0.1;
                 Intent intent = new Intent("service_settings");
                 intent.putExtra("radius", radius);
                 LocalBroadcastManager bm = LocalBroadcastManager.getInstance(context);
                 bm.sendBroadcast(intent);
-                Toast.makeText(getApplicationContext(), "Radius Set", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Radius Set", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
         });
@@ -171,7 +171,7 @@ public class MainActivity extends Activity {
                     dialog.cancel();
                 }
 
-                Toast.makeText(getApplicationContext(), "Recency Set", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Recency Set", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
         });
@@ -222,7 +222,7 @@ public class MainActivity extends Activity {
                     dialog.cancel();
                 }
 
-                Toast.makeText(getApplicationContext(), "Query Rate Set", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Query Rate Set", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
         });

@@ -37,6 +37,12 @@ public class ListActivity extends ActionBarActivity {
     }
 
     private void updateList() {
+        if (entries == null) {
+            entries = new EntryList();
+        }
+        if (loc == null) {
+            loc = new Location("poi");
+        }
         adapter.clear();
         for (Entry e : entries.getValues()) {
             adapter.add(new EntryWrapper(e, loc, !loc.getProvider().equals("poi")));
@@ -60,8 +66,16 @@ public class ListActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
-        entries = new EntryList();
+        if (getIntent() != null) {
+            entries = getIntent().getParcelableExtra("entries");
+            loc = getIntent().getParcelableExtra("location");
+        }
+        if (savedInstanceState != null) {
+            entries = savedInstanceState.getParcelable("entries");
+            loc = savedInstanceState.getParcelable("location");
+        }
 
         adapter = new EntryAdapter(this.getApplicationContext(), new ArrayList<EntryWrapper>());
 
@@ -71,14 +85,21 @@ public class ListActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(ListActivity.this, EntryActivity.class);
-                EntryWrapper w = (EntryWrapper)(parent.getAdapter().getItem(position));
+                EntryWrapper w = (EntryWrapper) (parent.getAdapter().getItem(position));
                 intent.putExtra("wrapper", w);
                 startActivity(intent);
             }
         });
 
-        Intent intent = new Intent(this, DaengerDaemon.class);
-        startService(intent);
+        updateList();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("entries", entries);
+        outState.putParcelable("location", loc);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -95,28 +116,5 @@ public class ListActivity extends ActionBarActivity {
         IntentFilter intentFilter = new IntentFilter("refresh");
         LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         bm.registerReceiver(dataUpdateReceiver, intentFilter);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        super.onOptionsItemSelected(item);
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
